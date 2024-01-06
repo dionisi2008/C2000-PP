@@ -8,6 +8,16 @@ namespace C2000_PP
 {
     public class C2000_PP
     {
+        public enum States
+        {
+            Восстановление_сети = 1,
+            Авария_сети_220_В = 2,
+            Тревога_Проникновения = 3,
+            Помеха = 4,
+            Отключение_Звука = 5,
+            Помеха_Устранена = 6,
+            -------------------------------------------------------9
+        }
         protected Int16 Max_Relay { get; set; }
         protected Int16 Max_Zone { get; set; }
         protected Int16 Max_Razdels { get; set; }
@@ -39,8 +49,6 @@ namespace C2000_PP
             max_event_description_length = ЗапросМаксимальнойДлиныОписанияСобытия();
             Запрос_типа_и_версии_прибора();
         }
-
-
 
         private Int16 ПолучитьЗапросМаксимальногоКоличестваРеле()
         {
@@ -100,6 +108,17 @@ namespace C2000_PP
             }
             DevicesVersion = BitConverter.ToInt16(response[5..^2]);
         }
+
+        public  UInt16 ЗапросСостоянияЗоны(int Numbe_Zone)
+        {
+
+            var writeData = new List<byte>(BitConverter.GetBytes((ushort)(40000 + (Numbe_Zone - 1)))[..^2]);
+            writeData.AddRange(new byte[] { 0, 1 });
+            var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
+            return BitConverter.ToUInt16(response[3..^2]);
+        }
+
+
         public byte[] SendData(PacketData data)
         {
             try
