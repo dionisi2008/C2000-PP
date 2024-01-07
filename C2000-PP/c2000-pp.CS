@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography.X509Certificates;
 
 namespace C2000_PP
@@ -201,6 +202,8 @@ namespace C2000_PP
             Запрос_типа_и_версии_прибора();
         }
 
+
+
         private Int16 ПолучитьЗапросМаксимальногоКоличестваРеле()
         {
             var WriteData = new List<byte> { 0xB4, 0x40, 0, 1 };
@@ -260,14 +263,43 @@ namespace C2000_PP
             DevicesVersion = BitConverter.ToInt16(response[5..^2]);
         }
 
+
+        public bool[] Запрос_состояния_группы_реле(int Start_Index_Releay, byte Count_Releay)
+        {
+            var writeData = new List<byte>(BitConverter.GetBytes((ushort)(10000 + (Start_Index_Releay - 1)))[..^2]);
+            writeData.Add(0);
+            writeData.Add(Count_Releay);
+            var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
+            List<bool> tmp2 = new List<bool>();
+            for (int shag = 0; shag <= response.Length - 3; shag++)
+            {
+                string tmp3 = Convert.ToString(response[shag]).PadLeft(8, '0');
+                for (int shag2 = 0; shag2 <= 8; shag2++)
+                {
+                    if (tmp3[shag2] == '1')
+                    {
+                        tmp2.Add(true);
+                    }
+                    else
+                    {
+                        tmp2.Add(false);
+                    }
+                }
+            }
+            
+            return tmp2.ToArray();
+        }
+
         public States ЗапросСостоянияЗоны(int Numbe_Zone)
         {
-
             var writeData = new List<byte>(BitConverter.GetBytes((ushort)(40000 + (Numbe_Zone - 1)))[..^2]);
             writeData.AddRange(new byte[] { 0, 1 });
             var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
-            return States.Задержка_пуска;// BitConverter.ToUInt16(response[3..^2]);
+            return (States)BitConverter.ToUInt16(response[3..^2]);
         }
+
+
+
 
 
         public byte[] SendData(PacketData data)
