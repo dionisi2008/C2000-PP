@@ -11,13 +11,24 @@ namespace MyApp // Note: actual namespace depends on the project name.
     {
         static void Main(string[] args)
         {
-
-            C2000_PP.C2000_PP test = new C2000_PP.C2000_PP("localhost", 9050, 1, 9600);
-            
             
 
+            bool[] qwer = new bool[] { true, true, false, false, true, false, false, true, false, true, false, false, false, true, false, true, false };
+            byte wert = 0;
+            for (int i = 0; i < qwer.Length; i++)
+            {
+                if (qwer[i])
+                {
+                    wert |= (byte)(1 << i);
+                }
+            }
+
+            Console.WriteLine(string.Join('-', qwer));
+            Console.WriteLine(wert.ToString());
+
+            cons
 
         }
-        
+
     }
 }
