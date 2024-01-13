@@ -11,24 +11,21 @@ namespace MyApp // Note: actual namespace depends on the project name.
     {
         static void Main(string[] args)
         {
+
+            byte[] ss = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            System.Console.WriteLine(string.Join('-', ss[2..^2]));
+
+            System.Console.WriteLine(string.Join('-', BitConverter.GetBytes((ushort)(40000 + (745 - 1)))));
+
+            var writeData = new List<byte>(new byte[] { 0xb4, 0x60 });
+            System.Console.WriteLine(string.Join('-', BitConverter.ToUInt16(writeData.ToArray().Reverse().ToArray(), 0)));
+            Console.WriteLine(string.Join('-', BitConverter.GetBytes((ushort)46176).Reverse().ToArray()));
+
             
+            
+             
 
-            bool[] qwer = new bool[] { true, true, false, false, true, false, false, true, false, true, false, false, false, true, false, true, false };
-            byte wert = 0;
-            for (int i = 0; i < qwer.Length; i++)
-            {
-                if (qwer[i])
-                {
-                    wert |= (byte)(1 << i);
-                }
-            }
-
-            Console.WriteLine(string.Join('-', qwer));
-            Console.WriteLine(wert.ToString());
-
-            cons
 
         }
-
     }
 }

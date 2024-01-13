@@ -182,6 +182,19 @@ namespace C2000_PP
         }
 
 
+        public enum States_Zone
+        {
+            Взятие_ШС = 24,
+            Сзятие_ШС = 109,
+            Включение_контроля_ШС = 111,
+            Выкючение_контроля_ШС = 112,
+            Отключение_Автоматики = 142,
+            Сброс_Пуска_АСПТ = 143,
+            Пуск_АСПТ = 146,
+            Включение_Автоматики = 148,
+        }
+
+
         public C2000_PP_Info(string IP_address, int UDP_Port, byte AddressOfDevices, int Speed) : base(IP_address, UDP_Port, AddressOfDevices, Speed)
         {
             Max_Relay = ПолучитьЗапросМаксимальногоКоличестваРеле();
@@ -258,13 +271,6 @@ namespace C2000_PP
             DevicesVersion = BitConverter.ToInt16(response[5..^2]);
         }
 
-
-
-
-
-
-
-
         protected byte[] SendData(PacketData data)
         {
             try
@@ -296,6 +302,30 @@ namespace C2000_PP
             }
 
             return null;
+        }
+
+        public byte[] ConvertBoolArrayToByteArray(bool[] boolArray)
+        {
+            int byteCount = (boolArray.Length + 7) / 8; // Вычисляем количество байт
+
+            byte[] byteArray = new byte[byteCount];
+
+            for (int i = 0; i < boolArray.Length; i++)
+            {
+                if (boolArray[i])
+                {
+                    int byteIndex = i / 8;
+                    int bitIndex = i % 8;
+                    byteArray[byteIndex] |= (byte)(1 << (7 - bitIndex));
+                }
+            }
+
+            return byteArray;
+        }
+
+        public byte[] ConvertInt_Byte_Reverse(int GetInt)
+        {
+            return BitConverter.GetBytes((ushort)GetInt).Reverse().ToArray();
         }
     }
 }
