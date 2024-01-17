@@ -181,6 +181,17 @@ namespace C2000_PP
             Прошел_час = 255,
         }
 
+        public enum Type_Data
+        {
+            Порядковый_номер_пользователя_в_базе_данных_С2000_ПП = 1,
+            Раздел_номер_раздела_Modbus = 2,
+            Зона_порядковый_номер_зоны_Modbus = 3,
+            Реле_порядковый_номер_реле_Modbus = 5,
+            Реле_состояние_реле = 7,
+            Время_и_дата_часы_минуты_секунды_день_месяц_год = 11,
+            ID_раздела_идентификатор_раздела_Modbus = 24,
+
+        }
 
         public enum States_Zone
         {
@@ -304,7 +315,7 @@ namespace C2000_PP
             return null;
         }
 
-        public byte[] ConvertBoolArrayToByteArray(bool[] boolArray)
+        protected byte[] ConvertBoolArrayToByteArray(bool[] boolArray)
         {
             int byteCount = (boolArray.Length + 7) / 8; // Вычисляем количество байт
 
@@ -323,9 +334,30 @@ namespace C2000_PP
             return byteArray;
         }
 
-        public byte[] ConvertInt_Byte_Reverse(int GetInt)
+        protected byte[] ConvertInt_Byte_Reverse(int GetInt)
         {
             return BitConverter.GetBytes((ushort)GetInt).Reverse().ToArray();
+        }
+
+        protected ushort ConvertByte_ushort_Reverse(byte[] Getbyte)
+        {
+            return BitConverter.ToUInt16(Getbyte.Reverse().ToArray());
+        }
+
+        public class Event_System : C2000_PP_Info
+        {
+            public ushort Size_Event_Info;
+            public ushort Nambe_event;
+            public States Event_State;
+            public Event_System(byte[] Get_Data)
+            {
+                Nambe_event = ConvertByte_ushort_Reverse(Get_Data[0..2]);
+                Size_Event_Info = Get_Data[2];
+                Event_State = (States)Get_Data[3];
+
+            }
+
+            
         }
     }
 }
