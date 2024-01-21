@@ -343,6 +343,11 @@ namespace C2000_PP
         {
             return BitConverter.ToUInt16(Getbyte.Reverse().ToArray());
         }
+        protected short ConvertByte_short_Reverse(byte[] Getbyte)
+        {
+            
+            return BitConverter.ToInt16(Getbyte.Reverse().ToArray());
+        }
 
         public class Event_System : C2000_PP_Info
         {
@@ -357,7 +362,7 @@ namespace C2000_PP
 
             }
 
-            
+
         }
     }
 }
