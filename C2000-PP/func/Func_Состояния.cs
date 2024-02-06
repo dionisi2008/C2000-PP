@@ -4,9 +4,11 @@ using C2000_PP;
 
 public class Func_Состояния : C2000_PP_Info
 {
-    public Func_Состояния()
+    public Func_Состояния(string GetIpadd, int GetPort, byte GetAdres)
     {
-
+        this.AddressOfDevices = GetAdres;
+        this.IP_address = GetIpadd;
+        this.UDP_Port = GetPort;
     }
 
 
@@ -62,18 +64,25 @@ public class Func_Состояния : C2000_PP_Info
 
     }
 
-    public States ЗапросСостоянияЗоны(int Numbe_Zone)
+    public States[] ЗапросСостоянияЗоны(int Numbe_Zone)
     {
-        var writeData = new List<byte>(BitConverter.GetBytes((ushort)(40000 + (Numbe_Zone - 1))));
+        var writeData = new List<byte>(ConvertInt_Byte_Reverse(40000 + (Numbe_Zone - 1)));
         writeData.AddRange(new byte[] { 0, 1 });
-        var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
-        return (States)BitConverter.ToUInt16(response[3..^2]);
+        
+        var response = base.SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
+        
+        return new States[]{(States)response[3], (States)response[4]};
     }
     public bool Команда_Устоновки_Состояния_Зоны(int Numbe_Zone, States_Zone Get_State_Zone)
     {
-        var writeData = new List<byte>(BitConverter.GetBytes((ushort)(40000 + (Numbe_Zone - 1))));
-        writeData.AddRange(new byte[] { 0, 1 });
+        var writeData = new List<byte>(ConvertInt_Byte_Reverse(40000 + (Numbe_Zone - 1)));
+        writeData.AddRange(new byte[] { 0, (byte)Get_State_Zone });
         var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Запись_значения_в_один_регистр_хранения, writeData.ToArray()));
+        if (!(response[2..^2].ToArray() == writeData.ToArray()))
+        {
+            byte[] kk = response[2..^2];
+            Console.WriteLine(BitConverter.ToString(response));
+        }
         return response[2..^2] == writeData.ToArray();
     }
     private bool Устоновка_Номера_Зоны_Для_Запроса_Расширенного_Состояния_Зоны(int Numbe_Zone)

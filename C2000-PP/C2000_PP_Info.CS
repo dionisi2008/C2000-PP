@@ -216,6 +216,8 @@ namespace C2000_PP
             Max_Size_Event = ЗапросМаксимальногоКоличестваСобытий();
             max_event_description_length = ЗапросМаксимальнойДлиныОписанияСобытия();
             Запрос_типа_и_версии_прибора();
+
+
         }
 
         public C2000_PP_Info()
@@ -284,33 +286,26 @@ namespace C2000_PP
 
         protected byte[] SendData(PacketData data)
         {
-            try
+            UdpClient Client = new UdpClient(IP_address, UDP_Port);
+
+            Client.Send(data.ПолучитьПакетВВидеБайт(), data.ПолучитьПакетВВидеБайт().Length);
+            // Client.Close();
+            // Client = new UdpClient(UDP_Port);
+            Task<UdpReceiveResult> Резулдьтат_Запроса = Client.ReceiveAsync();
+            if (Резулдьтат_Запроса.Wait(120))
             {
-                using (var udpClient = new UdpClient())
+                Client.Close();
+                if (Резулдьтат_Запроса.Result.Buffer[1] > 20)
                 {
-                    udpClient.Connect(IP_address, UDP_Port);
-                    udpClient.Send(data.ПолучитьПакетВВидеБайт(), data.ПолучитьПакетВВидеБайт().Length);
-
-                    // Ждем 500 мс
-                    System.Threading.Thread.Sleep(500);
-
-                    // Проверяем наличие ответа
-                    if (udpClient.Available > 0)
-                    {
-                        IPEndPoint remoteEndPoint = null;
-                        byte[] response = udpClient.Receive(ref remoteEndPoint);
-                        return response;
-                    }
-                    else
-                    {
-                        Console.WriteLine("No response received.");
-                    }
+                    // System.Console.WriteLine("Debug 1: " + string.Join('-', data.ПолучитьПакетВВидеБайт()));
                 }
+                //System.Console.WriteLine("DeBug 11: " + BitConverter.ToString(Резулдьтат_Запроса.Result.Buffer));
+                return Резулдьтат_Запроса.Result.Buffer;
+
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error sending data via UDP: " + ex.Message);
-            }
+
+            Client.Close();
+
 
             return null;
         }
@@ -345,7 +340,7 @@ namespace C2000_PP
         }
         protected short ConvertByte_short_Reverse(byte[] Getbyte)
         {
-            
+
             return BitConverter.ToInt16(Getbyte.Reverse().ToArray());
         }
 

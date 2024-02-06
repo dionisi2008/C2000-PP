@@ -24,10 +24,15 @@ namespace C2000_PP
 
         public PacketData(byte addressOfDevices, ModbusFunctionCode functionCode, byte[] data)
         {
+            
             Address = addressOfDevices;
             Function = functionCode;
             DataGet = data;
-            CRC = CalculateCRC(data);
+            List<byte> tmp = new List<byte>();
+            tmp.Add(Address);
+            tmp.Add((byte)Function);
+            tmp.AddRange(DataGet);
+            CRC = CalculateCRC(tmp.ToArray());
         }
 
         public byte[] ПолучитьПакетВВидеБайт()
