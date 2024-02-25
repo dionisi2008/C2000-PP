@@ -81,8 +81,12 @@ public class Func_Состояния : C2000_PP_Info
         if (!(response[2..^2].ToArray() == writeData.ToArray()))
         {
             byte[] kk = response[2..^2];
-            Console.WriteLine(BitConverter.ToString(response));
+            //Console.WriteLine(BitConverter.ToString(response));
         }
+        Console.WriteLine("Debug 34");
+        Console.WriteLine(string.Join('-', response[2..^2]));
+        Console.WriteLine(string.Join('-', writeData.ToArray()));
+
         return response[2..^2] == writeData.ToArray();
     }
     private bool Устоновка_Номера_Зоны_Для_Запроса_Расширенного_Состояния_Зоны(int Numbe_Zone)

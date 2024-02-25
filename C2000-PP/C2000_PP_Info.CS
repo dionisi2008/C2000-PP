@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 
@@ -208,16 +209,16 @@ namespace C2000_PP
 
         public C2000_PP_Info(string IP_address, int UDP_Port, byte AddressOfDevices, int Speed) : base(IP_address, UDP_Port, AddressOfDevices, Speed)
         {
-            Max_Relay = ПолучитьЗапросМаксимальногоКоличестваРеле();
-            Max_Zone = ПолучитьМаксимальноеКоличествоЗон();
-            Max_Razdels = ЗапросМаксимальногоКоличестваРазделов();
-            Max_State_Zone = ЗапросМаксимальногоКоличестваСостоянийЗоны();
-            Max_State_Razdel = ЗапросМаксимальногоКоличестваСостоянийРаздела();
-            Max_Size_Event = ЗапросМаксимальногоКоличестваСобытий();
-            max_event_description_length = ЗапросМаксимальнойДлиныОписанияСобытия();
-            Запрос_типа_и_версии_прибора();
-
-
+            if (Запрос_типа_и_версии_прибора() != "Not Device")
+            {
+                Max_Relay = ПолучитьЗапросМаксимальногоКоличестваРеле();
+                Max_Zone = ПолучитьМаксимальноеКоличествоЗон();
+                Max_Razdels = ЗапросМаксимальногоКоличестваРазделов();
+                Max_State_Zone = ЗапросМаксимальногоКоличестваСостоянийЗоны();
+                Max_State_Razdel = ЗапросМаксимальногоКоличестваСостоянийРаздела();
+                Max_Size_Event = ЗапросМаксимальногоКоличестваСобытий();
+                max_event_description_length = ЗапросМаксимальнойДлиныОписанияСобытия();
+            }
         }
 
         public C2000_PP_Info()
@@ -272,32 +273,37 @@ namespace C2000_PP
             var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
             return BitConverter.ToInt16(response[3..^2]);
         }
-        private void Запрос_типа_и_версии_прибора()
+        public string Запрос_типа_и_версии_прибора()
         {
             var writeData = new List<byte> { 0xB4, 0x48, 0, 2 };
             var response = SendData(new PacketData(AddressOfDevices, ModbusFunctionCode.Чтение_значений_из_нескольких_регистров_хранения, writeData.ToArray()));
-            this.DevicesType = "Null";
-            if (BitConverter.ToInt16(response[3..^4]) == 36)
+            this.DevicesType = "Not Device";
+            if (response != null)
             {
-                this.DevicesType = "C2000-PP";
+                if (BitConverter.ToInt16(response[3..^4].Reverse().ToArray()) == 36)
+                {
+                    this.DevicesType = "C2000-PP";
+                }
+                DevicesVersion = BitConverter.ToInt16(response[5..^2]);
             }
-            DevicesVersion = BitConverter.ToInt16(response[5..^2]);
+
+            return DevicesType;
         }
 
         protected byte[] SendData(PacketData data)
         {
             UdpClient Client = new UdpClient(IP_address, UDP_Port);
-
-            Client.Send(data.ПолучитьПакетВВидеБайт(), data.ПолучитьПакетВВидеБайт().Length);
-            // Client.Close();
-            // Client = new UdpClient(UDP_Port);
+            byte[] WriteData = data.ПолучитьПакетВВидеБайт();
+            Client.Send(WriteData, WriteData.Length);
+            Client.Close();
+            Client = new UdpClient(UDP_Port);
             Task<UdpReceiveResult> Резулдьтат_Запроса = Client.ReceiveAsync();
             if (Резулдьтат_Запроса.Wait(120))
             {
                 Client.Close();
                 if (Резулдьтат_Запроса.Result.Buffer[1] > 20)
                 {
-                    // System.Console.WriteLine("Debug 1: " + string.Join('-', data.ПолучитьПакетВВидеБайт()));
+                    //System.Console.WriteLine("Debug 1: " + string.Join('-', data.ПолучитьПакетВВидеБайт()));
                 }
                 //System.Console.WriteLine("DeBug 11: " + BitConverter.ToString(Резулдьтат_Запроса.Result.Buffer));
                 return Резулдьтат_Запроса.Result.Buffer;
@@ -331,7 +337,13 @@ namespace C2000_PP
 
         protected byte[] ConvertInt_Byte_Reverse(int GetInt)
         {
-            return BitConverter.GetBytes((ushort)GetInt).Reverse().ToArray();
+            ushort ushortNumbe = (ushort)GetInt;
+            byte[] BytesNumbe = BitConverter.GetBytes(ushortNumbe);
+            if (BytesNumbe[0] <= BytesNumbe[1])
+            {
+                BytesNumbe = BytesNumbe.Reverse().ToArray();
+            }
+            return BytesNumbe;
         }
 
         protected ushort ConvertByte_ushort_Reverse(byte[] Getbyte)

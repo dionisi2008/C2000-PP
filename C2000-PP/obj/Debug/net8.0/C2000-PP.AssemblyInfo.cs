@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("C2000-PP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f72f38f1ea0b366af015057d37d393c43322f54")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+856da2c2575d9075e73c4f3cebdebe2085ee3b14")]
 [assembly: System.Reflection.AssemblyProductAttribute("C2000-PP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("C2000-PP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
